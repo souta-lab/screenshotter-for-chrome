@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "Screenshotter for Chrome",
+    "description": "A simple tool for screenshotting in Chrome",
+    "version": "1.0",
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": "favicon.ico"
+    },
+    "permissions": ["clipboardWrite","activeTab","scripting","tabs"],
+    "content_scripts": []
+  }
+  
