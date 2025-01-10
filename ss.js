@@ -3,7 +3,16 @@ chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true }, tabs => {
 
 document.getElementById("screenShotButton").addEventListener("click", async () => {
     var capturing = chrome.tabs.captureVisibleTab({format: "png", quality: 100});
-    capturing.then(clipboard);
+    var blob = await capturing.then(clipboard);
+    if (document.getElementById("something").checked) {
+    var yyyymmdd = new Date().toISOString().slice(0, 10);
+    var time = new Date().toLocaleTimeString('ja-JP', {hour12:false}).split(":").join("-");
+    const filename = yyyymmdd+"_"+time+".png";
+    chrome.downloads.download({
+        'url': URL.createObjectURL(blob),
+        'filename': filename,
+    })
+    }
 });
 });
 
@@ -14,6 +23,7 @@ function clipboard (datauri) {
             "image/png": blob
         })
     ]);
+    return blob;
 }
 
 function dataURItoBlob(dataURI) {

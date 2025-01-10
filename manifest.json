@@ -7,7 +7,7 @@
       "default_popup": "popup.html",
       "default_icon": "favicon.ico"
     },
-    "permissions": ["clipboardWrite","activeTab","scripting","tabs"],
+    "permissions": ["clipboardWrite","activeTab","scripting","tabs","downloads"],
     "content_scripts": []
   }
   
