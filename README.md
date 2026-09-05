@@ -16,7 +16,7 @@ A simple Chrome extension for taking screenshots.
 
 ## Permissions
 
-- `activeTab`, `scripting`, `tabs`, `downloads`, `clipboardWrite`
+- `activeTab` (capture the visible tab), `clipboardWrite` (copy to clipboard), `downloads` (optional save-to-file)
 
 ## License
 

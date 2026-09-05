@@ -1,50 +1,52 @@
 
-chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true }, tabs => {
-
 document.getElementById("screenShotButton").addEventListener("click", async () => {
-    var capturing = chrome.tabs.captureVisibleTab({format: "png", quality: 100});
-    var blob = await capturing.then(clipboard);
-    if (document.getElementById("something").checked) {
-    var yyyymmdd = new Date().toISOString().slice(0, 10);
-    var time = new Date().toLocaleTimeString('ja-JP', {hour12:false}).split(":").join("-");
-    const filename = yyyymmdd+"_"+time+".png";
-    chrome.downloads.download({
-        'url': URL.createObjectURL(blob),
-        'filename': filename,
-    })
-    }
-});
-});
+  try {
+    const dataUrl = await chrome.tabs.captureVisibleTab({
+      format: "png",
+      quality: 100,
+    });
+    const blob = dataURItoBlob(dataUrl);
 
-function clipboard (datauri) {
-    var blob = dataURItoBlob(datauri);
-    navigator.clipboard.write([
-        new ClipboardItem({
-            "image/png": blob
-        })
-    ]);
-    return blob;
-}
+    // Copy to clipboard (best-effort: log but don't block download)
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+    } catch (err) {
+      console.warn("Clipboard write failed:", err);
+    }
+
+    if (document.getElementById("something").checked) {
+      const now = new Date();
+      const yyyymmdd = now.toISOString().slice(0, 10);
+      const time = now
+        .toLocaleTimeString("ja-JP", { hour12: false })
+        .split(":")
+        .join("-");
+      const filename = `${yyyymmdd}_${time}.png`;
+      const objectUrl = URL.createObjectURL(blob);
+      try {
+        await chrome.downloads.download({ url: objectUrl, filename });
+      } finally {
+        // Give the download a moment to start before revoking
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+      }
+    }
+  } catch (err) {
+    console.error("Screenshot failed:", err);
+  }
+});
 
 function dataURItoBlob(dataURI) {
+  const byteString = atob(dataURI.split(",")[1]);
+  const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
 
-    var byteString = atob(dataURI.split(',')[1]);
-  
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
 
-    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
-  
-
-    var ab = new ArrayBuffer(byteString.length);
-  
-
-    var ia = new Uint8Array(ab);
-  
-
-    for (var i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-    }
-  
-    var blob = new Blob([ab], {type: mimeString});
-    return blob;
-  
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
   }
+
+  return new Blob([ab], { type: mimeString });
+}
